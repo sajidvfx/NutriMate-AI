@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 
 # Load Gemini API key
-genai.configure(api_key="YOUR_GEMINI_API_KEY")  # Replace with your real key
+genai.configure(api_key="AIzaSyCZLaOq84VEGgBVC3C-1c0vZGXdeq7XGlk")  # Replace with your real key
 
 # Function to call Gemini
 def generate_meal_plan(weight, height, goal, ingredients):
