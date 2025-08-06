@@ -1,20 +1,10 @@
-import os
 import streamlit as st
 import google.generativeai as genai
-from dotenv import load_dotenv
 
-# Load .env variables locally (ignored in deployment)
-load_dotenv()
+# Load Gemini API key
+genai.configure(api_key="YOUR_GEMINI_API_KEY")  # Replace with your real key
 
-# Configure Gemini API Key from env
-api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    st.error("❌ Gemini API key not found. Set GEMINI_API_KEY in your environment.")
-    st.stop()
-
-genai.configure(api_key=api_key)
-
-# Meal Plan Generator
+# Function to call Gemini
 def generate_meal_plan(weight, height, goal, ingredients):
     try:
         prompt = f"""
@@ -31,34 +21,36 @@ def generate_meal_plan(weight, height, goal, ingredients):
         Include approximate protein and carb content per meal.
         """
 
-        model = genai.GenerativeModel("gemini-pro")
+        # ✅ Using flash model
+        model = genai.GenerativeModel(model_name="models/gemini-1.5-flash-latest")
         response = model.generate_content(prompt)
         return response.text.strip()
 
     except Exception as e:
         return f"⚠️ An error occurred while generating your plan:\n\n{str(e)}"
 
-# ------------------- Streamlit UI -------------------
+
+# ---------------- Streamlit UI ----------------
+
 st.set_page_config(page_title="NutriMate - AI Fitness Meal Planner", layout="centered")
 
 st.title("🥗 NutriMate")
 st.subheader("Your AI Fitness Meal Companion")
+
 st.markdown("Get your personalized high-protein diet plan using AI – based on your body and ingredients you have at home.")
 
-# Input form
-with st.form("meal_form"):
-    weight = st.number_input("Your Weight (kg)", min_value=30, max_value=200, value=70)
-    height = st.number_input("Your Height (cm)", min_value=130, max_value=220, value=175)
-    goal = st.radio("Your Fitness Goal", ["Weight Loss", "Muscle Gain", "General Wellness"])
-    ingredients = st.text_area("Available Ingredients (comma-separated)", placeholder="e.g., eggs, oats, milk, banana")
+# Input fields
+weight = st.number_input("Your Weight (kg)", min_value=30, max_value=200, value=70)
+height = st.number_input("Your Height (cm)", min_value=130, max_value=220, value=175)
+goal = st.radio("What is your fitness goal?", ["Weight Loss", "Muscle Gain", "General Wellness"])
+ingredients = st.text_area("Available Ingredients (comma-separated)", placeholder="e.g., eggs, oats, milk, banana")
 
-    submitted = st.form_submit_button("Generate My Meal Plan 🍽️")
-
-if submitted:
+# Button
+if st.button("Generate My Meal Plan 🍽️"):
     if not ingredients.strip():
-        st.warning("⚠️ Please enter at least one ingredient.")
+        st.warning("Please enter at least one ingredient.")
     else:
-        with st.spinner("🤖 Thinking like a nutritionist..."):
-            result = generate_meal_plan(weight, height, goal, ingredients)
-            st.success("✅ Here's your personalized plan:")
-            st.markdown(result)
+        with st.spinner("Thinking like a nutritionist..."):
+            plan = generate_meal_plan(weight, height, goal, ingredients)
+            st.success("Here's your personalized plan!")
+            st.markdown(plan)
