@@ -21,13 +21,13 @@ def generate_meal_plan(weight, height, goal, ingredients):
         Include approximate protein and carb content per meal.
         """
 
-        # ✅ Using flash model
-        model = genai.GenerativeModel(model_name="models/gemini-1.5-flash-latest")
+        model = genai.GenerativeModel("gemini-1.5-flash")  # or gemini-1.5-pro if available
         response = model.generate_content(prompt)
-        return response.text.strip()
+
+        return response.text.strip() if response.text else "⚠️ No response generated."
 
     except Exception as e:
-        return f"⚠️ An error occurred while generating your plan:\n\n{str(e)}"
+        return f"⚠️ Error generating plan: {str(e)}"
 
 
 # ---------------- Streamlit UI ----------------
@@ -52,5 +52,6 @@ if st.button("Generate My Meal Plan 🍽️"):
     else:
         with st.spinner("Thinking like a nutritionist..."):
             plan = generate_meal_plan(weight, height, goal, ingredients)
-            st.success("Here's your personalized plan!")
-            st.markdown(plan)
+
+        st.success("Here's your personalized plan!")
+        st.markdown(plan)
